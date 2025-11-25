@@ -1,0 +1,230 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary-color: #4a90e2;
+  --danger-color: #e74c3c;
+  --success-color: #2ecc71;
+  --warning-color: #f39c12;
+  --bg-color: #f5f7fa;
+  --card-bg: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: var(--text-primary);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  padding: 20px;
+}
+
+header h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.alert-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.alert-indicator {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.alert-indicator.normal {
+  border: 4px solid var(--success-color);
+}
+
+.alert-indicator.warning {
+  border: 4px solid var(--warning-color);
+  animation: pulse-warning 2s infinite;
+}
+
+.alert-indicator.danger {
+  border: 4px solid var(--danger-color);
+  animation: pulse-danger 1s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); }
+  50% { box-shadow: 0 0 0 20px rgba(243, 156, 18, 0); }
+}
+
+@keyframes pulse-danger {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+  50% { box-shadow: 0 0 0 20px rgba(231, 76, 60, 0); }
+}
+
+.indicator-content {
+  margin-bottom: 20px;
+}
+
+.decibel-value {
+  font-size: 5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.alert-indicator.warning .decibel-value {
+  color: var(--warning-color);
+}
+
+.alert-indicator.danger .decibel-value {
+  color: var(--danger-color);
+}
+
+.decibel-label {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  margin-top: -10px;
+}
+
+.status-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 15px;
+  border-radius: 10px;
+  background: var(--bg-color);
+}
+
+.alert-indicator.normal .status-text {
+  color: var(--success-color);
+}
+
+.alert-indicator.warning .status-text {
+  color: var(--warning-color);
+}
+
+.alert-indicator.danger .status-text {
+  color: var(--danger-color);
+}
+
+.info-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.info-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: var(--shadow);
+}
+
+.card-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card-value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.chart-section {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+.chart-section h2 {
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.chart-container {
+  position: relative;
+  height: 400px;
+  margin-bottom: 20px;
+}
+
+.refresh-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, var(--primary-color), #357abd);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.refresh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.refresh-btn:active {
+  transform: translateY(0);
+}
+
+footer {
+  text-align: center;
+  color: white;
+  padding: 20px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 1024px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  header h1 {
+    font-size: 2rem;
+  }
+  
+  .decibel-value {
+    font-size: 4rem;
+  }
+}
+

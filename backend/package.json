@@ -1,0 +1,16 @@
+{
+  "name": "babymonitor-backend",
+  "version": "1.0.0",
+  "description": "Azure Functions backend for Baby Monitor IoT",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@azure/cosmos": "^4.0.0"
+  },
+  "devDependencies": {
+    "@azure/functions": "^4.0.0"
+  }
+}
+

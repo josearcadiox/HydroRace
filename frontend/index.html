@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitor de Bebés IoT</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🍼 Monitor de Bebés IoT</h1>
+      <p class="subtitle">Sistema de monitoreo de ruido en tiempo real</p>
+    </header>
+
+    <div class="dashboard">
+      <div class="alert-section">
+        <div id="alertIndicator" class="alert-indicator">
+          <div class="indicator-content">
+            <div class="decibel-value" id="currentDecibels">--</div>
+            <div class="decibel-label">dB</div>
+          </div>
+          <div class="status-text" id="statusText">Esperando datos...</div>
+        </div>
+        
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="card-label">Dispositivo</div>
+            <div class="card-value" id="deviceId">--</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label">Última actualización</div>
+            <div class="card-value" id="lastUpdate">--</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label">Total registros</div>
+            <div class="card-value" id="totalRecords">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-section">
+        <h2>Historial de Ruido</h2>
+        <div class="chart-container">
+          <canvas id="noiseChart"></canvas>
+        </div>
+        <button id="refreshBtn" class="refresh-btn">🔄 Actualizar Datos</button>
+      </div>
+    </div>
+
+    <footer>
+      <p>Proyecto Universitario - Monitor IoT | Datos actualizados automáticamente cada 10 segundos</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
