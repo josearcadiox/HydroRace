@@ -22,10 +22,12 @@ echo "Ubicación: $LOCATION"
 echo ""
 
 echo "Desplegando infraestructura..."
+echo "Usando: main-freetier.bicep (Cosmos DB Free Tier - Recomendado para suscripciones educativas)"
+echo ""
 az deployment group create \
   --name $DEPLOYMENT_NAME \
   --resource-group $RESOURCE_GROUP \
-  --template-file main.bicep \
+  --template-file main-freetier.bicep \
   --parameters location=$LOCATION
 
 if [ $? -eq 0 ]; then
