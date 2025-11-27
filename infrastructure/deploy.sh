@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RESOURCE_GROUP="Nico"
+RESOURCE_GROUP="Arcadio"
 LOCATION="eastus"
 DEPLOYMENT_NAME="babymonitor-deployment-$(date +%s)"
 

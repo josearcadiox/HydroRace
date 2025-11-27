@@ -1,13 +1,14 @@
 param location string = resourceGroup().location
 param projectName string = 'babymonitor'
 param environment string = 'dev'
+param tenantId string = '11dfdbbd-4a23-4cb7-b4c1-08aaf72dc2fb'
+param userObjectId string = 'f4a0434c-b4c3-469f-97aa-9fabdb7da319'
 
 var uniqueSuffix = uniqueString(resourceGroup().id)
 var staticWebAppName = '${projectName}-web-${environment}-${uniqueSuffix}'
-var functionAppName = '${projectName}-func-${environment}-${uniqueSuffix}'
 var cosmosAccountName = '${projectName}-cosmos-${environment}-${uniqueSuffix}'
-var storageName = '${projectName}st${environment}${uniqueSuffix}'
-var hostingPlanName = '${projectName}-plan-${environment}-${uniqueSuffix}'
+var storageName = 'bmst${substring(uniqueSuffix, 0, 13)}'
+var keyVaultName = 'bmkv${substring(uniqueSuffix, 0, 13)}'
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   name: cosmosAccountName
@@ -26,10 +27,6 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
       }
     ]
     enableFreeTier: true
-    capacityMode: 'Provisioned'
-    capacity: {
-      totalThroughputLimit: 1000
-    }
     backupPolicy: {
       type: 'Periodic'
       periodicModeProperties: {
@@ -124,83 +121,67 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
-resource hostingPlan 'Microsoft.Web/serverfarms@2022-09-01' = {
-  name: hostingPlanName
+resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+  name: keyVaultName
   location: location
-  sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
-  }
-  properties: {}
-}
-
-resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
-  name: functionAppName
-  location: location
-  kind: 'functionapp'
   properties: {
-    serverFarmId: hostingPlan.id
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${az.environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-        }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${az.environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
-        }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(functionAppName)
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'node'
-        }
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18'
-        }
-        {
-          name: 'COSMOS_DB_ENDPOINT'
-          value: cosmosAccount.properties.documentEndpoint
-        }
-        {
-          name: 'COSMOS_DB_KEY'
-          value: cosmosAccount.listKeys().primaryMasterKey
-        }
-        {
-          name: 'COSMOS_DB_DATABASE'
-          value: 'BabyMonitorDB'
-        }
-        {
-          name: 'COSMOS_DB_CONTAINER'
-          value: 'NoiseData'
-        }
-      ]
-      cors: {
-        allowedOrigins: [
-          'https://${staticWebApp.properties.defaultHostname}'
-          'http://localhost:3000'
-          'http://localhost:4280'
-          'http://localhost:8080'
-        ]
-      }
-      ftpsState: 'Disabled'
-      minTlsVersion: '1.2'
+    sku: {
+      family: 'A'
+      name: 'standard'
     }
-    httpsOnly: true
+    tenantId: tenantId
+    enableRbacAuthorization: false
+    accessPolicies: [
+      {
+        tenantId: tenantId
+        objectId: userObjectId
+        permissions: {
+          keys: ['all']
+          secrets: ['all']
+          certificates: ['all']
+        }
+      }
+    ]
+    enabledForDeployment: false
+    enabledForDiskEncryption: false
+    enabledForTemplateDeployment: true
+    enableSoftDelete: true
+    softDeleteRetentionInDays: 7
+    publicNetworkAccess: 'Enabled'
   }
   tags: {
     project: projectName
     environment: environment
   }
 }
+
+// Store Cosmos DB credentials in Key Vault
+resource cosmosDbEndpointSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'CosmosDbEndpoint'
+  properties: {
+    value: cosmosAccount.properties.documentEndpoint
+  }
+}
+
+resource cosmosDbKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'CosmosDbKey'
+  properties: {
+    value: cosmosAccount.listKeys().primaryMasterKey
+  }
+}
+
+resource storageConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+  parent: keyVault
+  name: 'StorageConnectionString'
+  properties: {
+    value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${az.environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+  }
+}
+
+// Function App and Hosting Plan removed - not supported in this subscription
+// You'll need to create these manually or use a different deployment method
 
 resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
   name: staticWebAppName
@@ -222,10 +203,10 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-09-01' = {
 
 output staticWebAppUrl string = 'https://${staticWebApp.properties.defaultHostname}'
 output staticWebAppName string = staticWebApp.name
-output functionAppUrl string = 'https://${functionApp.properties.defaultHostname}'
-output functionAppName string = functionApp.name
 output cosmosDbEndpoint string = cosmosAccount.properties.documentEndpoint
 output cosmosDbAccountName string = cosmosAccount.name
 output storageAccountName string = storageAccount.name
+output keyVaultName string = keyVault.name
+output keyVaultUri string = keyVault.properties.vaultUri
 output resourceGroupName string = resourceGroup().name
 
