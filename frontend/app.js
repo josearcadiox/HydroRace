@@ -1,5 +1,28 @@
-const API_BASE_URL = ''; // Usar URL relativa para Static Web Apps
-const USE_MOCK_DATA = false;
+// ========================================
+// Configuración - Cargada desde config.js
+// ========================================
+
+// Cargar configuración desde config.js o usar valores por defecto
+const API_BASE_URL =
+  window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL !== undefined
+    ? window.APP_CONFIG.API_BASE_URL
+    : ''; // Por defecto, URL relativa
+
+const USE_MOCK_DATA =
+  window.APP_CONFIG && window.APP_CONFIG.USE_MOCK_DATA !== undefined
+    ? window.APP_CONFIG.USE_MOCK_DATA
+    : false;
+
+const REFRESH_INTERVAL =
+  window.APP_CONFIG && window.APP_CONFIG.REFRESH_INTERVAL !== undefined
+    ? window.APP_CONFIG.REFRESH_INTERVAL
+    : 10000; // 10 segundos por defecto
+
+// Log de configuración
+if (window.APP_CONFIG && window.APP_CONFIG.DEBUG) {
+  console.log('📡 API Base URL:', API_BASE_URL || '(URL relativa)');
+  console.log('🔄 Refresh Interval:', REFRESH_INTERVAL, 'ms');
+}
 
 let chart;
 let refreshInterval;
@@ -175,7 +198,7 @@ document.getElementById('refreshBtn').addEventListener('click', refresh);
 document.addEventListener('DOMContentLoaded', async () => {
   createChart();
   await refresh();
-  refreshInterval = setInterval(refresh, 10000);
+  refreshInterval = setInterval(refresh, REFRESH_INTERVAL);
 });
 
 window.addEventListener('beforeunload', () => {
