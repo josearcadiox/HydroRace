@@ -1,145 +1,96 @@
-# 🍼 Monitor de Bebés IoT - Proyecto Universitario
+# Monitor de Bebés IoT
 
-Sistema de monitoreo de ruido en tiempo real usando Arduino, Azure Cloud y tecnologías web modernas.
+Proyecto universitario que monitorea el nivel de ruido en la habitación de un bebé usando Arduino y Azure Cloud.
 
-## 📋 Descripción del Proyecto
+## Descripción
 
-Este proyecto implementa un sistema IoT completo para monitorear el nivel de ruido en la habitación de un bebé. Utiliza dispositivos Arduino con módulo Wi-Fi para capturar datos de ruido y los envía a una infraestructura cloud en Azure para su procesamiento, almacenamiento y visualización en tiempo real.
+Sistema que captura datos de ruido con un sensor conectado a Arduino ESP8266/ESP32, los envía a Azure y los visualiza en una aplicación web en tiempo real.
 
-## 🏗️ Arquitectura del Sistema
+## Componentes
 
-```
-┌─────────────┐
-│   Arduino   │ ──WiFi──> ┌──────────────────┐
-│  + Sensor   │           │  Azure Function  │
-│   Ruido     │           │  ReceiveNoiseData│
-└─────────────┘           └─────────┬────────┘
-                                    │
-                                    ▼
-                          ┌─────────────────┐
-                          │   Cosmos DB     │
-                          │  (Serverless)   │
-                          └────────┬────────┘
-                                   │
-                                   ▼
-                          ┌─────────────────┐
-                          │ Azure Function  │
-                          │ GetNoiseHistory │
-                          └────────┬────────┘
-                                   │
-                                   ▼
-                          ┌─────────────────┐
-                          │  Static Web App │
-                          │   (Frontend)    │
-                          └─────────────────┘
-```
+- **Arduino (ESP8266/ESP32)** - Captura niveles de ruido y los envía vía WiFi
+- **Azure Functions** - Backend que recibe y consulta datos
+- **Cosmos DB** - Base de datos NoSQL (Free Tier)
+- **Azure Static Web App** - Frontend con dashboard interactivo
 
-## 🚀 Tecnologías Utilizadas
-
-### Backend
-- **Azure Functions** (Node.js 18)
-- **Cosmos DB** (Serverless)
-- **Bicep** (Infrastructure as Code)
-
-### Frontend
-- **HTML5 / CSS3**
-- **JavaScript (Vanilla)**
-- **Chart.js** para visualización
-
-### Hardware
-- **Arduino** (ESP8266/ESP32)
-- **Módulo Wi-Fi**
-- **Sensor de Ruido**
-
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 proyecto/
-├── infrastructure/          # Infraestructura como código (Bicep)
-│   ├── main.bicep          # Definición de recursos Azure
+├── infrastructure/
+│   ├── main.bicep          # Recursos de Azure
 │   └── deploy.sh           # Script de despliegue
-│
-├── backend/                # Azure Functions (Node.js)
-│   ├── src/
-│   │   ├── functions/
-│   │   │   ├── ReceiveNoiseData.js    # Recibe datos del Arduino
-│   │   │   └── GetNoiseHistory.js     # API para el frontend
-│   │   └── shared/
-│   │       └── cosmosClient.js        # Cliente Cosmos DB
-│   ├── package.json
-│   ├── host.json
-│   └── local.settings.json
-│
-├── frontend/               # Aplicación web estática
-│   ├── index.html         # Página principal
-│   ├── styles.css         # Estilos
-│   └── app.js             # Lógica del cliente
-│
-└── docs/                  # Documentación
-    ├── DATABASE_SCHEMA.md      # Esquema de base de datos
-    └── DEPLOYMENT_GUIDE.md     # Guía de despliegue
+├── backend/
+│   └── src/functions/
+│       ├── ReceiveNoiseData.js
+│       └── GetNoiseHistory.js
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
+└── docs/
+    ├── DATABASE_SCHEMA.md
+    └── ARDUINO_EXAMPLE.md
 ```
 
-## 🎯 Funcionalidades
+## Instalación
 
-### Captura de Datos
-- ✅ Recepción de datos JSON desde dispositivos Arduino
-- ✅ Almacenamiento en Cosmos DB serverless
-- ✅ Validación de datos entrantes
-
-### Visualización
-- ✅ Gráfica de historial de ruido (últimas 50 lecturas)
-- ✅ Indicador visual de alerta (verde/amarillo/rojo)
-- ✅ Actualización automática cada 10 segundos
-- ✅ Interfaz responsive y moderna
-
-### Alertas
-- 🟢 **Verde**: < 60 dB - Todo tranquilo
-- 🟡 **Amarillo**: 60-70 dB - Precaución
-- 🔴 **Rojo**: > 70 dB - Alerta de ruido alto
-
-## 🔧 Configuración y Despliegue
-
-### Requisitos Previos
-
-```bash
-node --version        # v18+
-az --version          # Azure CLI
-func --version        # Azure Functions Core Tools v4
-```
-
-### Instalación Local
-
-```bash
-git clone <tu-repositorio>
-cd proyecto
-
-cd backend
-npm install
-
-cd ../frontend
-```
-
-### Despliegue a Azure
-
-Ver la [Guía de Despliegue](docs/DEPLOYMENT_GUIDE.md) completa.
-
-Resumen rápido:
+### 1. Desplegar en Azure
 
 ```bash
 cd infrastructure
 ./deploy.sh
-
-cd ../backend
-func azure functionapp publish <FUNCTION_APP_NAME>
-
-cd ../frontend
-az staticwebapp deploy --name <STATIC_APP_NAME> --resource-group rg-babymonitor-dev
 ```
 
-## 📊 Esquema de Datos
+Esto crea los recursos necesarios en Azure.
 
-### Formato de Envío (Arduino → Azure)
+### 2. Configurar Backend
+
+```bash
+cd backend
+npm install
+```
+
+Actualizar `local.settings.json` con las credenciales de Cosmos DB.
+
+### 3. Configurar Frontend
+
+Editar `frontend/app.js`:
+
+```javascript
+const API_BASE_URL = 'https://tu-function-app.azurewebsites.net';
+const USE_MOCK_DATA = false;
+```
+
+### 4. Configurar Arduino
+
+Ver código completo en `docs/ARDUINO_EXAMPLE.md`
+
+Actualizar las credenciales WiFi y URL del API:
+
+```cpp
+const char* ssid = "TU_WIFI";
+const char* password = "TU_PASSWORD";
+const char* azureFunctionUrl = "https://tu-function-app.azurewebsites.net/api/ReceiveNoiseData";
+```
+
+## Uso
+
+El sistema muestra:
+
+- Indicador visual de nivel de ruido (verde/amarillo/rojo)
+- Gráfica con historial de las últimas lecturas
+- Actualización automática cada 10 segundos
+
+### Niveles de Alerta
+
+- **Verde** (< 60 dB): Todo tranquilo
+- **Amarillo** (60-70 dB): Precaución
+- **Rojo** (> 70 dB): Alerta de ruido alto
+
+## Esquema de Datos
+
+### Formato de envío desde Arduino
 
 ```json
 {
@@ -161,103 +112,36 @@ az staticwebapp deploy --name <STATIC_APP_NAME> --resource-group rg-babymonitor-
 }
 ```
 
-Ver [DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) para más detalles.
-
-## 🔌 API Endpoints
+## API Endpoints
 
 ### POST /api/ReceiveNoiseData
-Recibe datos del dispositivo Arduino.
+Recibe datos del Arduino
 
-**Request:**
-```json
-{
-  "deviceId": "baby_01",
-  "decibels": 65.5,
-  "timestamp": "2024-11-24T10:30:00.000Z"
-}
-```
+### GET /api/GetNoiseHistory?limit=50
+Obtiene historial de lecturas
 
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "baby_01_1700000000000",
-    "deviceId": "baby_01",
-    "decibels": 65.5,
-    "timestamp": "2024-11-24T10:30:00.000Z",
-    "createdAt": "2024-11-24T10:30:00.123Z"
-  }
-}
-```
+## Costos
 
-### GET /api/GetNoiseHistory
-Obtiene el historial de lecturas.
+Usando servicios gratuitos de Azure:
 
-**Query Params:**
-- `limit` (opcional): Número de registros (default: 50)
-- `deviceId` (opcional): Filtrar por dispositivo
+- Static Web App: Gratis
+- Function App: Gratis (1M ejecuciones/mes)
+- Cosmos DB: Gratis (Free Tier con 1000 RU/s)
+- Storage: ~$0.03/mes
 
-**Response:**
-```json
-{
-  "success": true,
-  "count": 50,
-  "data": [...]
-}
-```
+**Total: < $1/mes**
 
-## 💰 Estimación de Costos
+## Documentación Adicional
 
-Utilizando tiers gratuitos/serverless de Azure:
+- `docs/DATABASE_SCHEMA.md` - Detalles de la base de datos
+- `docs/ARDUINO_EXAMPLE.md` - Código completo para Arduino
 
-| Servicio | Tier | Costo Estimado |
-|----------|------|----------------|
-| Static Web App | Free | $0 |
-| Function App | Consumption | ~$0 (1M req/mes gratis) |
-| Cosmos DB | Serverless | ~$0 (1M RU/mes gratis) |
-| Storage Account | Standard LRS | ~$0.03/mes |
+## Notas
 
-**Total**: < $1/mes para uso educativo
-
-## 🧪 Modo de Prueba
-
-El frontend incluye datos ficticios para pruebas sin necesidad de Azure:
-
-```javascript
-const USE_MOCK_DATA = true;
-```
-
-Cambiar a `false` una vez configurada la conexión con Azure.
-
-## 📝 Notas del Proyecto
-
-- ✅ Arquitectura Serverless para minimizar costos
-- ✅ Infraestructura como Código (IaC) con Bicep
-- ✅ API RESTful con Azure Functions
-- ✅ Base de datos NoSQL escalable
-- ✅ Frontend moderno y responsive
-- ✅ Listo para integración con Arduino
-
-## 🎓 Contexto Académico
-
-Este proyecto es parte de un curso universitario de Redes y sistemas IoT. Demuestra:
-
-1. Integración de hardware (Arduino) con cloud
-2. Arquitectura de microservicios serverless
-3. Uso de servicios PaaS de Azure
-4. Infrastructure as Code (IaC)
-5. Desarrollo Full Stack
-
-## 📄 Licencia
-
-Proyecto Universitario - Uso Educativo
-
-## 👨‍💻 Autor
-
-Proyecto desarrollado para curso de Redes - Universidad
+- El frontend incluye datos de prueba (modo mock) para desarrollo sin Azure
+- Se requiere suscripción de Azure para desplegar
+- Compatible con ESP8266 y ESP32
 
 ---
 
-**Nota**: Este proyecto está diseñado con servicios gratuitos/serverless de Azure para mantener costos mínimos durante el desarrollo y demostración.
-
+Proyecto Universitario - Redes y Sistemas IoT

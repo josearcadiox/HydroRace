@@ -5,54 +5,37 @@ app.http('ReceiveNoiseData', {
   methods: ['POST'],
   authLevel: 'anonymous',
   handler: async (request, context) => {
-    context.log('ReceiveNoiseData function triggered');
-
     try {
       const body = await request.json();
-      
       const { deviceId, decibels, timestamp } = body;
-
-      if (!deviceId || decibels === undefined || !timestamp) {
+      if (!deviceId || !decibels || !timestamp) {
         return {
           status: 400,
-          jsonBody: {
-            error: 'Missing required fields: deviceId, decibels, timestamp'
-          }
+          jsonBody: { error: 'Faltan campos requeridos' }
         };
       }
 
-      const noiseRecord = {
+      const record = {
         id: `${deviceId}_${Date.now()}`,
         deviceId,
         decibels: parseFloat(decibels),
-        timestamp: timestamp || new Date().toISOString(),
+        timestamp,
         createdAt: new Date().toISOString()
       };
 
       const container = getContainer();
-      const { resource: createdItem } = await container.items.create(noiseRecord);
-
-      context.log(`Noise data saved: ${JSON.stringify(createdItem)}`);
+      await container.items.create(record);
 
       return {
         status: 201,
-        jsonBody: {
-          success: true,
-          data: createdItem
-        }
+        jsonBody: { success: true, data: record }
       };
 
     } catch (error) {
-      context.error('Error processing noise data:', error);
-      
       return {
         status: 500,
-        jsonBody: {
-          error: 'Internal server error',
-          message: error.message
-        }
+        jsonBody: { error: error.message }
       };
     }
   }
 });
-
